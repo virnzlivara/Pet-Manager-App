@@ -15,12 +15,14 @@ import { petSchema } from "../schema/pet.schema";
 import { Pet } from "../types";
 import { z } from "zod";
 import * as ImagePicker from "expo-image-picker";
+import { useWatch } from "react-hook-form";
 
 type PetForm = z.infer<typeof petSchema>;
 
 const MainScreen: React.FC = () => {
   const { addPet, updatePet, deletePet, pets } = usePetContext();
   const [searchQuery, setSearchQuery] = useState<string>("");
+  
   const {
     control,
     handleSubmit,
@@ -37,6 +39,7 @@ const MainScreen: React.FC = () => {
       image: "",
     },
   });
+  const watchedImage = useWatch({ control, name: "image" });
 
   const [editingPet, setEditingPet] = useState<Pet | undefined>(undefined);
 
@@ -61,20 +64,19 @@ const MainScreen: React.FC = () => {
     setValue("id", pet.id);
     setValue("name", pet.name);
     setValue("age", pet.age);
-    setValue("description", pet.description || "");
-    setValue("image", pet.image || "");
+    setValue("description", pet.description );
+    setValue("image", pet.image);
   };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Only images allowed
-      allowsEditing: true, // Allow editing
-      aspect: [4, 3], // Aspect ratio for the image
-      quality: 1, // Set quality to the highest
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,  
+      allowsEditing: true,  
+      aspect: [4, 3], 
+      quality: 1,  
     });
 
-    if (!result.canceled) {
-      // Set the image URI to the form value
+    if (!result.canceled) { 
       setValue("image", result.assets[0].uri);
     } else {
       console.log("Image selection canceled.");
@@ -90,15 +92,15 @@ const MainScreen: React.FC = () => {
     <View style={styles.petItem}>
         {item.image && (
         <Image
-          source={{ uri: item.image }}  // The URI of the image
-          style={styles.petImage}       // Custom style for the image
+          source={{ uri: item.image }}  
+          style={styles.petImage}       
         />
       )}
       <Text>Name: {item.name}</Text>
       <Text>Age: {item.age}</Text>
       {item.description && <Text>Description: {item.description}</Text>}
       
-      {/* Display Image if available */}
+    
       
        
 
@@ -181,23 +183,22 @@ const MainScreen: React.FC = () => {
             </>
           )}
         />
-        
-        {/* Button to pick image */}
+         <View style={styles.imagePreviewContainer}>
+          {watchedImage && (
+            <Image
+              source={{ uri: watchedImage }}
+              style={styles.imagePreview}
+            />
+          )}
+         
+        </View> 
         <TouchableOpacity style={styles.button} onPress={pickImage}>
-          <Text style={styles.buttonText}>Pick Pet Image</Text>
+          <Text style={styles.buttonText}>Upload Image</Text>
         </TouchableOpacity>
  
         {errors.image && <Text style={styles.errorText}>{errors.image.message}</Text>} 
-         {control._formValues.image && ( 
-            <Image
-              source={{ uri: control._formValues.image }}
-              style={styles.imagePreview}
-            /> 
-          )}
-        <View style={styles.imagePreviewContainer}>
-         
-         
-        </View>
+       
+       
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
           <Text style={styles.buttonText}>
@@ -209,7 +210,7 @@ const MainScreen: React.FC = () => {
       <View style={styles.listContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Search Pets"
+          placeholder="Search Pet"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -253,6 +254,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#4CAF50",
     padding: 16,
     borderRadius: 5,
+    margin: 5
   },
   buttonText: {
     color: "white",
@@ -290,6 +292,9 @@ const styles = StyleSheet.create({
   },
   imagePreviewContainer: {
     marginTop: 16,
+    alignItems: 'center',           
+    justifyContent: 'center', 
+    marginVertical: 16,
   },
   imagePreview: {
     width: 100,
