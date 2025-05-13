@@ -13,6 +13,8 @@ import { usePetContext } from "../context/PetContext";
 import { petSchema } from "../schema/pet.schema";
 import { Pet } from "../types";
 import { z } from "zod";
+import * as ImagePicker from "expo-image-picker"; 
+import { Image } from "react-native";
 
 type PetForm = z.infer<typeof petSchema>;
 
@@ -59,6 +61,23 @@ const MainScreen: React.FC = () => {
     setValue("name", pet.name);
     setValue("age", pet.age);
     setValue("description", pet.description || "");
+    setValue("image", pet.image || "");
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Only images allowed
+      allowsEditing: true, // Allow editing
+      aspect: [4, 3], // Aspect ratio for the image
+      quality: 1, // Set quality to the highest
+    });
+
+    if (!result.canceled) {
+      // Set the image URI to the form value
+      setValue("image", result.assets[0].uri);
+    } else {
+      console.log("Image selection canceled.");
+    }
   };
 
   const filteredPets = pets.filter((pet) =>
@@ -71,6 +90,13 @@ const MainScreen: React.FC = () => {
       <Text>Name: {item.name}</Text>
       <Text>Age: {item.age}</Text>
       {item.description && <Text>Description: {item.description}</Text>}
+      {/* Display Image if available */}
+    {item.image && (
+      <Image
+        source={{ uri: item.image }}  // The URI of the image
+        style={styles.petImage}       // Custom style for the image
+      />
+    )}
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -151,7 +177,11 @@ const MainScreen: React.FC = () => {
             </>
           )}
         />
-
+        <TouchableOpacity style={styles.button} onPress={pickImage}>
+          <Text style={styles.buttonText}>Pick Pet Image</Text>
+        </TouchableOpacity>
+         {/* Display selected image */}
+         {errors.image && <Text style={styles.errorText}>{errors.image.message}</Text>}
         <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
           <Text style={styles.buttonText}>
             {editingPet ? "Update Pet" : "Add Pet"}

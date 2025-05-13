@@ -7,4 +7,5 @@ export const petSchema = z.object({
     .string()
     .refine((val) => /^\d+$/.test(val), { message: "Age must be a number" }),
   description: z.string().min(1, "Description is required"),
+  image: z.string().min(1, "Image is required")
 });

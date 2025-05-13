@@ -44,13 +44,13 @@ Here is screenshot of the app:
 
 1. Search Functionality:
 
-   - Add ability to search pets by name
+   - Add ability to search pets by name - FIXED
    - Implement filtering options
 
 2. Data Persistence:
 
-   - Implement local storage to persist pets data
-   - Handle app restart scenarios
+   - Implement local storage to persist pets data - FIXED
+   - Handle app restart scenarios - FIXED
 
 3. Pet Photo Upload:
 
