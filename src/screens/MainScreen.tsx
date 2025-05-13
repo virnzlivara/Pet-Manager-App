@@ -1,61 +1,72 @@
 import React, { useState } from "react";
 import {
   View,
+  Text,
   TextInput,
   TouchableOpacity,
-  Text,
-  StyleSheet,
   FlatList,
+  StyleSheet,
 } from "react-native";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { usePetContext } from "../context/PetContext";
 import { petSchema } from "../schema/pet.schema";
 import { Pet } from "../types";
+import { z } from "zod";
+
+type PetForm = z.infer<typeof petSchema>;
 
 const MainScreen: React.FC = () => {
   const { addPet, updatePet, deletePet, pets } = usePetContext();
-  const [name, setName] = useState("");
-  const [age, setAge] = useState("");
-  const [description, setDescription] = useState("");
-  const [editingPet, setEditingPet] = useState<Pet | undefined>(undefined);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm<PetForm>({
+    resolver: zodResolver(petSchema),
+    defaultValues: {
+      id: "",
+      name: "",
+      age: "",
+      description: "",
+    },
+  });
 
-  const handleSubmit = () => {
-    const petData = {
+  const [editingPet, setEditingPet] = useState<Pet | undefined>(undefined);
+
+  const onSubmit = (data: PetForm) => {
+    const petData: Pet = {
+      ...data,
       id: editingPet?.id || Date.now().toString(),
-      name,
-      age,
-      description,
     };
 
-    const result = petSchema.safeParse(petData);
-
-    if (!result.success) {
-      const fieldErrors: { [key: string]: string } = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0]] = err.message;
-        }
-      });
-      setErrors(fieldErrors);
-      return;
-    }
-
-    setErrors({}); // Clear errors
-
     if (editingPet) {
-      updatePet(result.data);
+      updatePet(petData);
     } else {
-      addPet(result.data);
+      addPet(petData);
     }
 
-    // Reset form
-    setName("");
-    setAge("");
-    setDescription("");
+    reset();
     setEditingPet(undefined);
   };
 
-  const renderPetItem = ({ item }: { item: any }) => (
+  const onEdit = (pet: Pet) => {
+    setEditingPet(pet);
+    setValue("id", pet.id);
+    setValue("name", pet.name);
+    setValue("age", pet.age);
+    setValue("description", pet.description || "");
+  };
+
+  const filteredPets = pets.filter((pet) =>
+    pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (pet.description && pet.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const renderPetItem = ({ item }: { item: Pet }) => (
     <View style={styles.petItem}>
       <Text>Name: {item.name}</Text>
       <Text>Age: {item.age}</Text>
@@ -63,12 +74,7 @@ const MainScreen: React.FC = () => {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={() => {
-            setEditingPet(item);
-            setName(item.name);
-            setAge(item.age);
-            setDescription(item.description || "");
-          }}
+          onPress={() => onEdit(item)}
           style={styles.editButton}
         >
           <Text>Edit</Text>
@@ -87,34 +93,66 @@ const MainScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.formContainer}>
-        {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="Pet Name"
-        />
-        {errors.age && <Text style={styles.errorText}>{errors.age}</Text>}
-        <TextInput
-          style={styles.input}
-          value={age}
-          onChangeText={setAge}
-          placeholder="Pet Age"
-          keyboardType="numeric"
-        />
-        {errors.description && (
-          <Text style={styles.errorText}>{errors.description}</Text>
-        )}
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          value={description}
-          onChangeText={setDescription}
-          placeholder="Pet Description"
-          multiline
-          numberOfLines={4}
+        <Controller
+          control={control}
+          name="name"
+          render={({ field: { onChange, value } }) => (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Pet Name"
+                value={value}
+                onChangeText={onChange}
+              />
+              {errors.name && (
+                <Text style={styles.errorText}>{errors.name.message}</Text>
+              )}
+            </>
+          )}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Controller
+          control={control}
+          name="age"
+          render={({ field: { onChange, value } }) => (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Pet Age"
+                value={value}
+                onChangeText={onChange}
+                keyboardType="numeric"
+              />
+              {errors.age && (
+                <Text style={styles.errorText}>{errors.age.message}</Text>
+              )}
+            </>
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="description"
+          render={({ field: { onChange, value } }) => (
+            <>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Pet Description"
+                value={value}
+                onChangeText={onChange}
+                multiline
+                numberOfLines={4}
+              />
+              {errors.description && (
+                <Text style={styles.errorText}>
+                  {errors.description.message}
+                </Text>
+              )}
+            </>
+          )}
+        />
+
+        <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
           <Text style={styles.buttonText}>
             {editingPet ? "Update Pet" : "Add Pet"}
           </Text>
@@ -122,15 +160,24 @@ const MainScreen: React.FC = () => {
       </View>
 
       <View style={styles.listContainer}>
+         {/* Search Field */}
+         <TextInput
+          style={styles.input}
+          placeholder="Search Pets"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
         <FlatList
-          data={pets}
+          data={filteredPets}
           keyExtractor={(item) => item.id}
           renderItem={renderPetItem}
+          
         />
       </View>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

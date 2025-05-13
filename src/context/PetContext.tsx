@@ -64,16 +64,20 @@ export const PetProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       return pet;
     });
-    setPets(newPets);
-    // setPets((prev) => prev.map((pet) => (pet.id === updatedPet.id ? updatedPet : pet)));
+    setPets(newPets); 
   };
 
   const deletePet = (id: string) => {
     setPets((prev) => prev.filter((pet) => pet.id !== id));
   };
-
-  // Placeholder for search functionality
-  const searchPets = () => {};
+ 
+  const searchPets = (val: string) => {
+    const filteredPets = pets.filter((pet) =>
+      pet.name.toLowerCase().includes(val.toLowerCase()) ||
+      (pet.description && pet.description.toLowerCase().includes(val.toLowerCase()))
+    );
+    setPets(filteredPets); 
+  };
 
   return (
     <PetContext.Provider

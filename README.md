@@ -29,15 +29,15 @@ Here is screenshot of the app:
    - Adding new pets doesn't preserve existing pets - FIXED
    - Updating pets doesn't work correctly - FIXED
    - Delete functionality is broken - FIXED
-   - Duplicate pet names allowed - - FIXED
+   - Duplicate pet names allowed -  FIXED
 
 2. Form Validation:
 
    - No validation for empty fields - FIXED
-   - Age field accepts invalid inputs 
+   - Age field accepts invalid inputs - FIXED
 
 3. Typescript:
-   - There are some typescript errors and ignores in the code
+   - There are some typescript errors and ignores in the code - FIXED
    - Make sure to fix them
 
 ## Features to Implement
