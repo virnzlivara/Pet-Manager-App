@@ -40,8 +40,7 @@ describe("PetContext", () => {
       </PetProvider>
     );
 
-  beforeEach(() => {
-    // Reset mocks before each test
+  beforeEach(() => { 
     jest.clearAllMocks();
   });
 
@@ -53,82 +52,69 @@ describe("PetContext", () => {
 
   it("should add a pet", async () => {
     const { getByText, getByTestId } = renderWithProvider();
-
-    // Add pet
+ 
     act(() => {
       fireEvent.press(getByText("Add Pet"));
     });
-
-    // Verify pet is added
+ 
     expect(getByTestId("pets-list").props.children).toContain("Max");
   });
 
   it("should update a pet", async () => {
     const { getByText, getByTestId } = renderWithProvider();
-
-    // Add pet
+ 
     act(() => {
       fireEvent.press(getByText("Add Pet"));
     });
-
-    // Update pet
+ 
     act(() => {
       fireEvent.press(getByText("Update Pet"));
     });
-
-    // Verify pet is updated
+ 
     expect(getByTestId("pets-list").props.children).toContain("Max Updated");
   });
 
   it("should delete a pet", async () => {
     const { getByText, getByTestId } = renderWithProvider();
-
-    // Add pet
+ 
     act(() => {
       fireEvent.press(getByText("Add Pet"));
     });
-
-    // Delete pet
+ 
     act(() => {
       fireEvent.press(getByText("Delete Pet"));
     });
-
-    // Verify pet is deleted
+ 
     expect(getByTestId("pets-list").props.children).toBe("[]");
   });
 
   it("should search pets by name", async () => {
     const { getByText, getByTestId, getByPlaceholderText } = renderWithProvider();
-
-    // Add pets
+ 
     act(() => {
       fireEvent.press(getByText("Add Pet"));
     });
     act(() => {
       fireEvent.press(getByText("Add Pet"));
     });
-
-    // Search for a pet
+ 
     act(() => {
       fireEvent.changeText(getByPlaceholderText("Search Pet"), "Max");
     });
-
-    // Verify that the pet is in the list
+ 
     expect(getByTestId("pets-list").props.children).toContain("Max");
   });
 
   it("should handle async storage correctly", async () => {
     const { getByText } = renderWithProvider();
-
-    // Simulate adding a pet and saving to AsyncStorage
+ 
     act(() => {
       fireEvent.press(getByText("Add Pet"));
     });
-
-    // Verify AsyncStorage setItem is called
+ 
     expect(require("@react-native-async-storage/async-storage").setItem).toHaveBeenCalledWith(
       "pets",
-      expect.any(String) // Verifying that the pets data is serialized correctly
+      expect.any(String)  
     );
   });
 });
