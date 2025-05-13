@@ -26,15 +26,15 @@ Here is screenshot of the app:
 
 1. Pet Management Issues:
 
-   - Adding new pets doesn't preserve existing pets
-   - Updating pets doesn't work correctly
-   - Delete functionality is broken
-   - Duplicate pet names allowed
+   - Adding new pets doesn't preserve existing pets - FIXED
+   - Updating pets doesn't work correctly - FIXED
+   - Delete functionality is broken - FIXED
+   - Duplicate pet names allowed - - FIXED
 
 2. Form Validation:
 
-   - No validation for empty fields
-   - Age field accepts invalid inputs
+   - No validation for empty fields - FIXED
+   - Age field accepts invalid inputs 
 
 3. Typescript:
    - There are some typescript errors and ignores in the code

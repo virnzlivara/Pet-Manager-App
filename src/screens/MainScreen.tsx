@@ -8,30 +8,51 @@ import {
   FlatList,
 } from "react-native";
 import { usePetContext } from "../context/PetContext";
+import { petSchema } from "../schema/pet.schema";
 import { Pet } from "../types";
-import List from "./List";
 
 const MainScreen: React.FC = () => {
   const { addPet, updatePet, deletePet, pets } = usePetContext();
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [description, setDescription] = useState("");
-  const [editingPet, setEditingPet] = useState<unknown>(undefined);
+  const [editingPet, setEditingPet] = useState<Pet | undefined>(undefined);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleSubmit = () => {
-    const petData: Pet = {
-      // @ts-ignore
+    const petData = {
       id: editingPet?.id || Date.now().toString(),
       name,
       age,
       description,
     };
 
-    if (editingPet) {
-      updatePet(petData);
-    } else {
-      addPet(petData);
+    const result = petSchema.safeParse(petData);
+
+    if (!result.success) {
+      const fieldErrors: { [key: string]: string } = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0]] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
     }
+
+    setErrors({}); // Clear errors
+
+    if (editingPet) {
+      updatePet(result.data);
+    } else {
+      addPet(result.data);
+    }
+
+    // Reset form
+    setName("");
+    setAge("");
+    setDescription("");
+    setEditingPet(undefined);
   };
 
   const renderPetItem = ({ item }: { item: any }) => (
@@ -66,12 +87,14 @@ const MainScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.formContainer}>
+        {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
         <TextInput
           style={styles.input}
           value={name}
           onChangeText={setName}
           placeholder="Pet Name"
         />
+        {errors.age && <Text style={styles.errorText}>{errors.age}</Text>}
         <TextInput
           style={styles.input}
           value={age}
@@ -79,6 +102,9 @@ const MainScreen: React.FC = () => {
           placeholder="Pet Age"
           keyboardType="numeric"
         />
+        {errors.description && (
+          <Text style={styles.errorText}>{errors.description}</Text>
+        )}
         <TextInput
           style={[styles.input, styles.textArea]}
           value={description}
@@ -87,6 +113,7 @@ const MainScreen: React.FC = () => {
           multiline
           numberOfLines={4}
         />
+
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
           <Text style={styles.buttonText}>
             {editingPet ? "Update Pet" : "Add Pet"}
@@ -94,7 +121,13 @@ const MainScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <List/>
+      <View style={styles.listContainer}>
+        <FlatList
+          data={pets}
+          keyExtractor={(item) => item.id}
+          renderItem={renderPetItem}
+        />
+      </View>
     </View>
   );
 };
@@ -153,6 +186,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f44336",
     padding: 8,
     borderRadius: 5,
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 8,
   },
 });
 

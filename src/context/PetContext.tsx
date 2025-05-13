@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pet } from "../types";
 
 type PetContextType = {
@@ -15,9 +16,45 @@ export const PetProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [pets, setPets] = useState<Pet[]>([]);
+  useEffect(() => {
+    const loadPets = async () => {
+      try {
+        const storedPets = await AsyncStorage.getItem("pets");
+        if (storedPets) {
+          setPets(JSON.parse(storedPets));
+        }
+      } catch (error) {
+        console.error("Failed to load pets from storage:", error);
+      }
+    };
+
+    loadPets();
+  }, []);
+
+  useEffect(() => {
+    const savePets = async () => {
+      try {
+        await AsyncStorage.setItem("pets", JSON.stringify(pets));
+        console.warn("Pet successfully saved!");
+      } catch (error) {
+        console.error("Failed to save pets to storage:", error);
+      }
+    };
+
+    savePets();
+  }, [pets]);
 
   const addPet = (pet: Pet) => {
-    setPets([...pets, pet]);
+    const nameExists = pets.some(
+      (existingPet) => existingPet.name.toLowerCase() === pet.name.toLowerCase()
+    );
+
+    if (nameExists) {
+      console.warn("Pet with this name already exists!");
+      return;
+    }
+
+    setPets((prev) => [...prev, pet]);
   };
 
   const updatePet = (updatedPet: Pet) => {
@@ -28,13 +65,14 @@ export const PetProvider: React.FC<{ children: React.ReactNode }> = ({
       return pet;
     });
     setPets(newPets);
+    // setPets((prev) => prev.map((pet) => (pet.id === updatedPet.id ? updatedPet : pet)));
   };
 
   const deletePet = (id: string) => {
-    setPets(pets.filter((pet) => pet.id === id));
+    setPets((prev) => prev.filter((pet) => pet.id !== id));
   };
 
-  // TODO: Implement search functionality
+  // Placeholder for search functionality
   const searchPets = () => {};
 
   return (
