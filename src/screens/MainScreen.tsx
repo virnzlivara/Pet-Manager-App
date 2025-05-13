@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  Image,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,8 +14,7 @@ import { usePetContext } from "../context/PetContext";
 import { petSchema } from "../schema/pet.schema";
 import { Pet } from "../types";
 import { z } from "zod";
-import * as ImagePicker from "expo-image-picker"; 
-import { Image } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 
 type PetForm = z.infer<typeof petSchema>;
 
@@ -34,6 +34,7 @@ const MainScreen: React.FC = () => {
       name: "",
       age: "",
       description: "",
+      image: "",
     },
   });
 
@@ -87,16 +88,19 @@ const MainScreen: React.FC = () => {
 
   const renderPetItem = ({ item }: { item: Pet }) => (
     <View style={styles.petItem}>
+        {item.image && (
+        <Image
+          source={{ uri: item.image }}  // The URI of the image
+          style={styles.petImage}       // Custom style for the image
+        />
+      )}
       <Text>Name: {item.name}</Text>
       <Text>Age: {item.age}</Text>
       {item.description && <Text>Description: {item.description}</Text>}
+      
       {/* Display Image if available */}
-    {item.image && (
-      <Image
-        source={{ uri: item.image }}  // The URI of the image
-        style={styles.petImage}       // Custom style for the image
-      />
-    )}
+      
+       
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -177,11 +181,24 @@ const MainScreen: React.FC = () => {
             </>
           )}
         />
+        
+        {/* Button to pick image */}
         <TouchableOpacity style={styles.button} onPress={pickImage}>
           <Text style={styles.buttonText}>Pick Pet Image</Text>
         </TouchableOpacity>
-         {/* Display selected image */}
-         {errors.image && <Text style={styles.errorText}>{errors.image.message}</Text>}
+ 
+        {errors.image && <Text style={styles.errorText}>{errors.image.message}</Text>} 
+         {control._formValues.image && ( 
+            <Image
+              source={{ uri: control._formValues.image }}
+              style={styles.imagePreview}
+            /> 
+          )}
+        <View style={styles.imagePreviewContainer}>
+         
+         
+        </View>
+
         <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
           <Text style={styles.buttonText}>
             {editingPet ? "Update Pet" : "Add Pet"}
@@ -190,8 +207,7 @@ const MainScreen: React.FC = () => {
       </View>
 
       <View style={styles.listContainer}>
-         {/* Search Field */}
-         <TextInput
+        <TextInput
           style={styles.input}
           placeholder="Search Pets"
           value={searchQuery}
@@ -201,13 +217,16 @@ const MainScreen: React.FC = () => {
           data={filteredPets}
           keyExtractor={(item) => item.id}
           renderItem={renderPetItem}
-          
+          ListEmptyComponent={() => (
+            <View style={styles.noDataContainer}>
+              <Text style={styles.noDataText}>No Pets Found</Text>
+            </View>
+          )}
         />
       </View>
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -244,6 +263,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   petItem: {
+    display: "flex", 
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
@@ -268,6 +288,34 @@ const styles = StyleSheet.create({
     color: "red",
     marginBottom: 8,
   },
+  imagePreviewContainer: {
+    marginTop: 16,
+  },
+  imagePreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 5,
+    marginTop: 8,
+    resizeMode: "cover",  // Optional: ensure image maintains its aspect ratio
+  },
+  petImage: {
+    width: 100,
+    height: 100,
+    marginTop: 8,
+    borderRadius: 5,
+    resizeMode: "cover",
+  },
+  noDataContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  noDataText: {
+    fontSize: 18,
+    color: '#555',
+    fontStyle: 'italic',
+  }
 });
 
 export default MainScreen;

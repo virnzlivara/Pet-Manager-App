@@ -54,11 +54,11 @@ Here is screenshot of the app:
 
 3. Pet Photo Upload:
 
-   - Add ability to upload pet photos
+   - Add ability to upload pet photos - DONE
 
 4. Testing:
-   - Add unit tests for form validation
-   - Test pet CRUD operations
+   - Add unit tests for form validation 
+   - Test pet CRUD operations - DONE
 
 ## Bonus Features (Optional)
 
