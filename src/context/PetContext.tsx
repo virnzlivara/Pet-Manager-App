@@ -30,20 +30,7 @@ export const PetProvider: React.FC<{ children: React.ReactNode }> = ({
 
     loadPets();
   }, []);
-
-  useEffect(() => {
-    const savePets = async () => {
-      try {
-        await AsyncStorage.setItem("pets", JSON.stringify(pets));
-        console.warn("Pet successfully saved!");
-      } catch (error) {
-        console.error("Failed to save pets to storage:", error);
-      }
-    };
-
-    savePets();
-  }, [pets]);
-
+  
   const addPet = (pet: Pet) => {
     const nameExists = pets.some(
       (existingPet) => existingPet.name.toLowerCase() === pet.name.toLowerCase()
