@@ -2,7 +2,7 @@ import React from "react";
 import { View, TextInput, FlatList, Text } from "react-native";
 import { Pet } from "../types"; 
 import { styles } from "../../styles";
-import PetItem from "./ PetItem";
+import PetItem from "./PetItem";
 
 type Props = {
   pets: Pet[];

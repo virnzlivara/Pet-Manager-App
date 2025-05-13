@@ -11,7 +11,7 @@ type Props = {
 
 const PetItem: React.FC<Props> = ({ pet, onEdit, onDelete }) => (
   <View style={styles.petItem}>
-    {pet.image && <Image source={{ uri: pet.image }} style={styles.petImage} />}
+    {pet.image && <Image testID="pet-image" source={{ uri: pet.image }} style={styles.petImage} />}
     <Text>Name: {pet.name}</Text>
     <Text>Age: {pet.age}</Text>
     {pet.description && <Text>Description: {pet.description}</Text>}

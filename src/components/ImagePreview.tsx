@@ -7,7 +7,7 @@ const ImagePreview: React.FC<{ uri?: string }> = ({ uri }) => {
 
   return (
     <View style={styles.imagePreviewContainer}>
-      <Image source={{ uri }} style={styles.imagePreview} />
+      <Image testID="image-preview" source={{ uri }} style={styles.imagePreview} />
     </View>
   );
 };
